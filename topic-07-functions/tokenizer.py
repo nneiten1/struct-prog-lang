@@ -49,6 +49,10 @@ for pattern in patterns:
 def tokenize(characters):
     tokens = []
     position = 0
+
+    lines = characters.split('\n')
+    characters = '\n'.join(line.split('//')[0] for line in lines)
+
     while position < len(characters):
         for pattern, tag in patterns:
             match = pattern.match(characters, position)
@@ -147,6 +151,17 @@ def test_error():
     except Exception as e:
         assert "Syntax error" in str(e),f"Unexpected exception: {e}"
 
+
+
+def test_single_line_comment():
+    print("test single-line comments")
+    source = "let x = 10; // initialize x\nprint(x); // output"
+    tokens = tokenize(source)
+    for token in tokens:
+        print(token)
+    assert any(t["value"] == "print" for t in tokens)
+    assert all("//" not in str(t["value"]) for t in tokens)
+
 if __name__ == "__main__":
     test_simple_token()
     test_number_token()
@@ -155,3 +170,4 @@ if __name__ == "__main__":
     test_keywords()
     test_identifier_tokens()
     test_error()
+    test_single_line_comment()
