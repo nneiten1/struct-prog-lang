@@ -25,6 +25,8 @@ patterns = [
     [r"not", "!"],  # alternate for !
     [r"assert","assert"],
     [r"[a-zA-Z_][a-zA-Z0-9_]*", "identifier"],  # identifiers
+    [r"\+\+", "++"],  # increment operator for project
+    [r"\-\-", "--"],  # decrement operator for project
     [r"\+", "+"],
     [r"\-", "-"],
     [r"\*", "*"],
@@ -105,6 +107,7 @@ def tokenize(characters, generated_tags=test_generated_tags):
 def test_simple_tokens():
     print("testing simple tokens...")
     examples = ".,[,],+,-,*,/,(,),{,},;,:,!,&&,||,<,>,<=,>=,==,!=,=,%".split(",")
+    examples += ["++", "--"]
     examples.append(",")
     for example in examples:
         t = tokenize(example)[0]
@@ -265,6 +268,28 @@ def test_tag_coverage():
     for pattern, tag in patterns:
         assert tag in test_generated_tags, f"Tag [ {tag} ] was not tested."
 
+def test_increment_decrement():
+    print("testing increment and decrement...")
+
+    examples = ["x++", "x--", "++x", "--x"]
+    for code in examples:
+        print(f"\nTokenizing: {code}")
+        tokens = tokenize(code)
+        for token in tokens:
+            if token["tag"] is not None:
+                print(f"  tag: {token['tag']}, value: {token['value']}")
+    
+    t = tokenize("x++")
+    assert t[0]["tag"] == "identifier" and t[1]["tag"] == "++"
+    
+    t = tokenize("x--")
+    assert t[0]["tag"] == "identifier" and t[1]["tag"] == "--"
+    
+    t = tokenize("++x")
+    assert t[0]["tag"] == "++" and t[1]["tag"] == "identifier"
+    
+    t = tokenize("--x")
+    assert t[0]["tag"] == "--" and t[1]["tag"] == "identifier"
 
 if __name__ == "__main__":
     print("testing tokenizer.")
@@ -279,4 +304,5 @@ if __name__ == "__main__":
     test_comments()
     test_error()
     test_tag_coverage()
+    test_increment_decrement()
     print("done.")
